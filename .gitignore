@@ -1,0 +1,10 @@
+# Local-only files: kept on disk, not pushed to GitHub
+index.html
+style.css
+script.js
+
+# Agent / workflow scaffolding (opencode + shared agent state)
+.opencode/
+.workflow/
+.a3/
+opencode.json
