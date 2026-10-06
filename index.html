@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Sound-to-Binary Converter: sample a sine wave and see binary encoding. Free school activity for Multimedia.">
+<title>Sound-to-Binary Converter</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#resultsCard">Skip to results</a>
+<noscript><p style="max-width:960px;margin:0 auto 12px;background:#fef2f2;color:#991b1b;padding:12px;border-radius:10px;font-weight:bold;">This converter needs JavaScript turned on to calculate and draw the wave.</p></noscript>
+<div class="container">
+
+  <header class="hero">
+    <h1 class="hero-title">
+      <span class="logo" aria-hidden="true">
+        <svg class="icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+      </span>
+      Sound-to-Binary Converter
+    </h1>
+    <p class="sub">Type a wave, press Convert, and see its measurements and binary result. One full wave is sampled evenly over its period.</p>
+    <div class="pills">
+      <span class="pill">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+        Merjohn Pagente
+      </span>
+      <span class="pill light">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/></svg>
+        BSCS-3 Section 36
+      </span>
+      <span class="pill">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5v13z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+        Multimedia
+      </span>
+    </div>
+  </header>
+
+  <!-- WORKSPACE: only Step 1 (left) + Steps 2-4 (right). Sticky ends here. -->
+  <div class="workspace">
+  <section class="card inputs-card">
+    <h2><span class="step" aria-hidden="true">01</span> Your Wave Inputs</h2>
+    <fieldset class="controls-grid">
+      <legend class="legend">Wave settings</legend>
+      <div class="field">
+        <label for="freq">Frequency (Hz)</label>
+        <input type="number" id="freq" value="1000" step="any" min="1" inputmode="decimal" aria-describedby="hint-freq" placeholder="e.g. 440">
+        <div class="hint" id="hint-freq">Pitch — must be greater than 0. Try 440, 200, 500.</div>
+      </div>
+      <div class="field">
+        <label for="amp">Amplitude (0 to 1)</label>
+        <input type="number" id="amp" value="1" step="any" min="0" max="1" inputmode="decimal" aria-describedby="hint-amp" placeholder="e.g. 0.8">
+        <div class="hint" id="hint-amp">Loudness — 0 is silent, 1 is loudest.</div>
+      </div>
+      <div class="field">
+        <label for="samples">Samples (2 to 64)</label>
+        <input type="number" id="samples" value="4" step="1" min="2" max="64" inputmode="numeric" aria-describedby="hint-samples" placeholder="e.g. 8">
+        <div class="hint" id="hint-samples">Whole number only. More samples is smoother.</div>
+      </div>
+      <div class="field">
+        <label for="bits">Bits per sample (1 to 8)</label>
+        <input type="number" id="bits" value="2" step="1" min="1" max="8" inputmode="numeric" aria-describedby="hint-bits" placeholder="e.g. 3">
+        <div class="hint" id="hint-bits">Whole number only. More bits is more detail.</div>
+      </div>
+    </fieldset>
+
+    <div class="btn-row">
+      <button id="convertBtn" type="button" onclick="convert()">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+        Convert
+      </button>
+      <button id="playBtn" type="button" onclick="playTone()">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Play Tone (1s)
+      </button>
+      <button id="copyBtn" type="button" onclick="copyBinary()">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        Copy Binary
+      </button>
+    </div>
+    <div class="preset-row" aria-label="Quick test presets">
+      <span class="small">Quick fill:</span>
+      <button type="button" class="preset" onclick="applyPreset(1000,1,4,2)">Check</button>
+      <button type="button" class="preset" onclick="applyPreset(440,0.8,8,3)">Test A</button>
+      <button type="button" class="preset" onclick="applyPreset(200,0.5,6,4)">Test B</button>
+      <button type="button" class="preset" onclick="applyPreset(500,0.9,5,3)">Test C</button>
+    </div>
+    <div id="playStatus" class="small" role="status">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+      <span id="playStatusText">Press Play to hear the tone. Turn your volume down first.</span>
+    </div>
+    <div id="volMeter" aria-hidden="true"><div id="volFill"></div></div>
+    <div id="warning" role="alert" aria-live="assertive"></div>
+  </section>
+
+    <div class="workspace-main">
+  <section class="card facts-card">
+    <h2><span class="step" aria-hidden="true">02</span> Wave Facts</h2>
+    <div class="stats">
+      <div class="stat"><div class="k"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M8 7l4-4 4 4"/><path d="M8 17l4 4 4-4"/></svg>Amplitude</div><div class="v" id="statAmp">—</div></div>
+      <div class="stat"><div class="k"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c2 0 2-6 4-6s2 12 4 12 2-12 4-12 2 6 4 6"/></svg>Frequency</div><div class="v" id="statFreq">—</div></div>
+      <div class="stat"><div class="k"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Period</div><div class="v" id="statPeriod">—</div></div>
+      <div class="stat"><div class="k"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="M7 8l-4 4 4 4"/><path d="M17 8l4 4-4 4"/></svg>Wavelength</div><div class="v" id="statWave">—</div></div>
+    </div>
+    <div id="waveFacts">
+      <div id="factsText">Press Convert to see results. Try: frequency 1000, amplitude 1, samples 4, bits 2.</div>
+    </div>
+    <canvas id="waveCanvas" width="900" height="220" role="img" aria-label="Animated sound wave with sample points"></canvas>
+    <div class="canvas-bar">
+      <span class="live-badge"><span id="liveDot" class="live-dot"></span>LIVE</span>
+      <button id="animBtn" type="button" onclick="toggleWave()" aria-pressed="true">
+        <svg id="animIcon" class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        <span id="animLabel">Pause animation</span>
+      </button>
+      <p class="small" id="canvasCaption" style="margin:0">Live preview — the wave scrolls and the dots ride it. The table is a frozen snapshot at phase 0.</p>
+    </div>
+  </section>
+
+  <section class="card" id="resultsCard">
+    <div class="results-table">
+    <h2><span class="step" aria-hidden="true">03</span> Sample Table</h2>
+    <div class="test-wrap sample-wrap">
+      <table>
+        <thead>
+          <tr><th>Sample #</th><th>Time (ms)</th><th>Amplitude</th><th>Level</th><th>Binary</th></tr>
+        </thead>
+        <tbody id="resultBody">
+          <tr><td colspan="5">No data yet — press Convert.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+    <div class="results-binary">
+    <h2><span class="step" aria-hidden="true">04</span> Binary Result</h2>
+    <p id="binaryResult" aria-live="polite">—</p>
+    <div id="bitChips" aria-label="Binary values as shade chips"></div>
+    <p id="totalBits"><strong>Total bits:</strong> —</p>
+    </div>
+  </section>
+    </div>
+  </div><!-- /workspace -->
+
+  <!-- OUTSIDE workspace: full-width, never overlapped -->
+  <section class="card test-card">
+    <h2><span class="step" aria-hidden="true">05</span> Test Results <span class="badge">matches app output</span></h2>
+    <p class="small">These numbers are copied from what my app actually shows for each setting.</p>
+    <div class="test-wrap">
+      <table>
+        <thead>
+          <tr><th>Test</th><th>Frequency</th><th>Amplitude</th><th>Samples</th><th>Bits</th><th>Period</th><th>Wavelength</th><th>Total bits</th><th>Binary result</th></tr>
+        </thead>
+        <tbody>
+          <tr><td data-label="Test"><strong>A</strong></td><td data-label="Frequency">440 Hz</td><td data-label="Amplitude">0.8</td><td data-label="Samples">8</td><td data-label="Bits">3</td><td data-label="Period">2.27 ms</td><td data-label="Wavelength">78.0 cm</td><td data-label="Total bits">24</td><td class="mono" data-label="Binary result">100 101 110 101 100 010 001 010</td></tr>
+          <tr><td data-label="Test"><strong>B</strong></td><td data-label="Frequency">200 Hz</td><td data-label="Amplitude">0.5</td><td data-label="Samples">6</td><td data-label="Bits">4</td><td data-label="Period">5.00 ms</td><td data-label="Wavelength">1.72 m</td><td data-label="Total bits">24</td><td class="mono" data-label="Binary result">1000 1011 1011 1000 0100 0100</td></tr>
+          <tr><td data-label="Test"><strong>C</strong></td><td data-label="Frequency">500 Hz</td><td data-label="Amplitude">0.9</td><td data-label="Samples">5</td><td data-label="Bits">3</td><td data-label="Period">2.00 ms</td><td data-label="Wavelength">68.6 cm</td><td data-label="Total bits">15</td><td class="mono" data-label="Binary result">100 110 101 010 001</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card explain-card">
+    <h2><span class="step" aria-hidden="true">06</span> Explain It</h2>
+    <ol class="explain">
+      <li><strong>How does your app change a sound wave into binary? Name the three steps.</strong><br>
+      My app changes sound into binary in three steps: sampling (measure the wave height at even times over one period), quantization (round each height to the nearest whole level from 0 to 2^bits − 1), and encoding (write each level in binary with leading zeros so every value has exactly "bits" digits).</li>
+      <li><strong>Run Test A again with 2 bits, then 6 bits. Which gives more detail about the wave, and why?</strong><br>
+      6 bits gives more detail because it has 64 levels while 2 bits has only 4 levels, so the steps are smaller and each binary value stays closer to the real wave height.</li>
+      <li><strong>Which test has the longest wavelength? How is wavelength connected to frequency?</strong><br>
+      Test B has the longest wavelength at 1.72 m. Wavelength equals 343 / frequency, so they are inversely related: a lower frequency gives a longer wavelength.</li>
+      <li><strong>What was the hardest stage to build, and how did you fix it?</strong><br>
+      The hardest stage was Stage 4 (binary), because the levels rounded wrong and the binary lost its leading zeros. I fixed it by testing with frequency 1000, amplitude 1, samples 4, bits 2 until it matched 10 11 10 00, using Math.round for rounding up and padStart for the leading zeros.</li>
+    </ol>
+  </section>
+
+  <footer>Made by Merjohn Pagente - BSCS-3 Section 36 - Sound-to-Binary Converter</footer>
+</div>
+<div id="mobileBar">
+  <button type="button" onclick="convert()">
+    <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+    Convert
+  </button>
+  <button type="button" onclick="playTone()">
+    <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    Play
+  </button>
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
